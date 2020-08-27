@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/reminders.dart';
@@ -12,6 +13,24 @@ class RemindersScreen extends StatefulWidget {
 }
 
 class _RemindersScreenState extends State<RemindersScreen> {
+  @override
+  void initState() {
+    final fcm = FirebaseMessaging();
+    final reminders = Provider.of<Reminders>(context, listen: false);
+    fcm.requestNotificationPermissions();
+    fcm.getToken().then((token) => reminders.saveToken(token));
+    fcm.configure(onMessage: (msg) {
+      print('onMessage '+msg.toString());
+      return;
+    }, onLaunch: (msg) {
+      print('onLaunch '+msg.toString());
+      return;
+    }, onResume: (msg) {
+      print ('onResume :' + msg.toString());
+      return;
+    });
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(

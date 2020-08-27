@@ -19,7 +19,7 @@ class Reminders with ChangeNotifier {
         .getDocuments();
     final List<DocumentSnapshot> docs = query.documents;
     this._reminders = docs.map(
-      (doc) => Reminder.fromFirebase(doc.data, this.owner_id)
+      (doc) => Reminder.fromFirebase(doc.data, doc.documentID, this.owner_id)
     ).toList();
    }
 
@@ -42,6 +42,15 @@ class Reminders with ChangeNotifier {
 
     _reminders.add(newReminder);
     notifyListeners();
+  }
+
+  // This oughta be managed elsewhere.... but cant load mobile_service cos of config stuff
+  Future<void> saveToken(String token) async {
+    await Firestore.instance
+    .collection('services').document('Mobile')
+    .updateData({this.owner_id: token});
+//    await Firestore.instance
+//        .collection('users').document(this.owner_id).setData({'token': token}, merge: true);
   }
 }
 
