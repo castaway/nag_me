@@ -12,24 +12,24 @@ class Reminders with ChangeNotifier {
 
   Future<void> loadReminders() async {
     // we fetch these from firebase!
-    final query = await Firestore.instance
+    final query = await FirebaseFirestore.instance
         .collection('users')
-        .document(this.owner_id)
+        .doc(this.owner_id)
         .collection('reminders')
-        .getDocuments();
-    final List<DocumentSnapshot> docs = query.documents;
+        .get();
+    final List<DocumentSnapshot> docs = query.docs;
     this._reminders = docs.map(
-      (doc) => Reminder.fromFirebase(doc.data, doc.documentID, this.owner_id)
+      (doc) => Reminder.fromFirebase(doc.data(), doc.id, this.owner_id)
     ).toList();
    }
 
   Future<void> addReminder(Reminder newReminder) async {
-    await Firestore.instance
+    await FirebaseFirestore.instance
         .collection('users')
-        .document(this.owner_id)
+        .doc(this.owner_id)
         .collection('reminders')
-        .document()
-        .setData({
+        .doc()
+        .set({
       'verb': newReminder.verb,
       'reminder_text': newReminder.reminder_text,
       'regularity': newReminder.regularity,
@@ -46,9 +46,9 @@ class Reminders with ChangeNotifier {
 
   // This oughta be managed elsewhere.... but cant load mobile_service cos of config stuff
   Future<void> saveToken(String token) async {
-    await Firestore.instance
-    .collection('services').document('Mobile')
-    .updateData({this.owner_id: token});
+    await FirebaseFirestore.instance
+    .collection('services').doc('Mobile')
+    .update({this.owner_id: token});
 //    await Firestore.instance
 //        .collection('users').document(this.owner_id).setData({'token': token}, merge: true);
   }

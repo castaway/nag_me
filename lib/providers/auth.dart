@@ -6,31 +6,33 @@ class Auth with ChangeNotifier {
   final _fbAuth = FirebaseAuth.instance;
   String user_id;
 
+//  String get userId => _fbAuth.currentUser != null ? _fbAuth.currentUser.uid : null;
+
   bool get isAuthenticated {
-    return user_id != null;
+    return _fbAuth.currentUser != null;
   }
 
   Future<void> signin(String email, String password) async {
-    AuthResult authResult = await _fbAuth.signInWithEmailAndPassword(
+    UserCredential authResult = await _fbAuth.signInWithEmailAndPassword(
       email: email,
       password: password,
     );
 
-    final user = await Firestore.instance
+    final user = await FirebaseFirestore.instance
         .collection('users')
-        .document(authResult.user.uid)
+        .doc(authResult.user.uid)
         .get();
-    if (user == null || !user.exists && authResult.user.isEmailVerified) {
+    if (user == null || !user.exists && authResult.user.emailVerified) {
       // Could store the "email" in the firestore data, but instead will only collect it for notification types
-      await Firestore.instance
+      await FirebaseFirestore.instance
           .collection('users')
-          .document(authResult.user.uid)
-          .setData({});
+          .doc(authResult.user.uid)
+          .set({});
     }
   }
 
   Future<void> signup(String email, String password) async {
-    AuthResult authResult = await _fbAuth.createUserWithEmailAndPassword(
+    UserCredential authResult = await _fbAuth.createUserWithEmailAndPassword(
       email: email,
       password: password,
     );

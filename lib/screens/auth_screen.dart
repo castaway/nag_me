@@ -53,44 +53,35 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<FirebaseUser>(
-        future: _auth.currentUser(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          return Scaffold(
-            backgroundColor: Theme.of(context).primaryColor,
-            body: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                AuthForm(_submitAuthForm, isLoading),
-                if (snapshot.hasData && !snapshot.data.isEmailVerified)
-                  Center(
-                    child: Card(
-                      child: Column(
-                        children: <Widget>[
-                          Text('A verification email was sent'),
-                          ButtonBar(
-                            children: <Widget>[
-                              RaisedButton(
-                                child: const Text('Resend email'),
-                                onPressed: () async {
-                                  snapshot.data.sendEmailVerification();
-                                },
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+    final user = _auth.currentUser;
+    return Scaffold(
+      backgroundColor: Theme.of(context).primaryColor,
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          AuthForm(_submitAuthForm, isLoading),
+          if (user != null && !user.emailVerified)
+            Center(
+              child: Card(
+                child: Column(
+                  children: <Widget>[
+                    Text('A verification email was sent'),
+                    ButtonBar(
+                      children: <Widget>[
+                        RaisedButton(
+                          child: const Text('Resend email'),
+                          onPressed: () async {
+                            user.sendEmailVerification();
+                          },
+                        ),
+                      ],
                     ),
-                  ),
-              ],
+                  ],
+                ),
+              ),
             ),
-          );
-        });
+        ],
+      ),
+    );
   }
 }

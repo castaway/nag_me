@@ -14,31 +14,31 @@ class Notifiers with ChangeNotifier {
 
   Future<void> loadNotifiers() async {
     // we fetch these from firebase!
-    final query = await Firestore.instance
+    final query = await FirebaseFirestore.instance
         .collection('users')
-        .document(this.owner_id)
+        .doc(this.owner_id)
         .collection('notifiers')
-        .getDocuments();
-    final List<DocumentSnapshot> docs = query.documents;
+        .get();
+    final List<DocumentSnapshot> docs = query.docs;
     this._notifiers = docs.map((doc) {
       Engine chosen = Engine.values.firstWhere((val) =>
-          val.toString() == doc.data['engine']);
+          val.toString() == doc.data()['engine']);
       return Notifier(
           owner_id: this.owner_id,
           engine: chosen,
-          settings: NotifierSetting.getInstance(chosen, jsonDecode(doc.data['settings'])),
-          last_modified: DateTime.parse(doc.data['last_modified'])
+          settings: NotifierSetting.getInstance(chosen, jsonDecode(doc.data()['settings'])),
+          last_modified: DateTime.parse(doc.data()['last_modified'])
       );
     }).toList();
   }
 
   Future<void> addNotifier(Notifier newNotifier) async {
-    await Firestore.instance
+    await FirebaseFirestore.instance
         .collection('users')
-        .document(this.owner_id)
+        .doc(this.owner_id)
         .collection('notifiers')
-        .document()
-        .setData({
+        .doc()
+        .set({
       'engine' : newNotifier.engine.toString(),
       'settings': newNotifier.settings.toString(),
       'last_modified': newNotifier.last_modified.toString()
