@@ -20,19 +20,21 @@ class _RemindersScreenState extends State<RemindersScreen> {
     fcm.requestNotificationPermissions();
     fcm.getToken().then((token) => reminders.saveToken(token));
     fcm.configure(onMessage: (msg) {
-      print('onMessage '+msg.toString());
+      print('onMessage ' + msg.toString());
       return;
     }, onLaunch: (msg) {
-      print('onLaunch '+msg.toString());
+      print('onLaunch ' + msg.toString());
       return;
     }, onResume: (msg) {
-      print ('onResume :' + msg.toString());
+      print('onResume :' + msg.toString());
       return;
     });
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
+    //final scaffold = Scaffold.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Text('Nag Me!'),
@@ -53,11 +55,51 @@ class _RemindersScreenState extends State<RemindersScreen> {
                     ? child
                     : ListView.builder(
                         itemCount: reminders.list.length,
-                        itemBuilder: (ctx, index) => ListTile(
-                          title: Text(
-                              'Have you ${reminders.list[index].verb} your ${reminders.list[index].reminder_text}?'),
-                          subtitle: Text(
-                              'Next run: ${reminders.list[index].next_time.toString()}'),
+                        itemBuilder: (ctx, index) => Column(
+                          children: <Widget>[
+                            ListTile(
+                              title: Text(
+                                  'Have you ${reminders.list[index].verb} your ${reminders.list[index].reminder_text}?'),
+                              subtitle: Text(
+                                  'Next run: ${reminders.list[index].next_time.toString()}'),
+                              trailing: Container(
+                                width: 100,
+                                child: Row(
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(Icons.edit),
+                                      onPressed: () {
+                                        Navigator.of(context).pushNamed(
+                                            EditReminderScreen.routeName,
+                                            arguments: reminders.list[index]);
+                                      },
+                                      color: Theme.of(context).primaryColor,
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.delete),
+                                      onPressed: () async {
+                                        try {
+                                          await Provider.of<Reminders>(context,
+                                                  listen: false)
+                                              .deleteReminder(
+                                                  reminders.list[index]);
+                                        } catch (error) {
+                                          Scaffold.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Deleting failed!',
+                                                  textAlign: TextAlign.center),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      color: Theme.of(context).errorColor,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Divider(),
+                          ],
                         ),
                       ),
               );
@@ -66,7 +108,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: () {
-          Navigator.of(context).pushNamed(NewReminderScreen.routeName);
+          Navigator.of(context).pushNamed(EditReminderScreen.routeName);
         },
       ),
     );

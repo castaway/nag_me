@@ -71,7 +71,7 @@ class MyApp extends StatelessWidget {
                       }
                     }),
                 routes: {
-                  NewReminderScreen.routeName: (_) => NewReminderScreen(),
+                  EditReminderScreen.routeName: (_) => EditReminderScreen(),
                   NewNotifierScreen.routeName: (_) => NewNotifierScreen(),
                   NotifiersScreen.routeName: (_) => NotifiersScreen(),
                   RemindersScreen.routeName: (_) => RemindersScreen(),

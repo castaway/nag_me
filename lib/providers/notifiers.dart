@@ -37,8 +37,7 @@ class Notifiers with ChangeNotifier {
         .collection('users')
         .doc(this.owner_id)
         .collection('notifiers')
-        .doc()
-        .set({
+        .add({
       'engine' : newNotifier.engine.toString(),
       'settings': newNotifier.settings.toString(),
       'last_modified': newNotifier.last_modified.toString()

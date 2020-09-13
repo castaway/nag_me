@@ -4,18 +4,18 @@ import 'package:provider/provider.dart';
 import '../providers/reminders.dart';
 import '../widgets/app_drawer.dart';
 
-class NewReminderScreen extends StatefulWidget {
+class EditReminderScreen extends StatefulWidget {
   static const routeName = '/add_reminder';
 
   @override
-  _NewReminderScreenState createState() => _NewReminderScreenState();
+  _EditReminderScreenState createState() => _EditReminderScreenState();
 }
 
-class _NewReminderScreenState extends State<NewReminderScreen> {
+class _EditReminderScreenState extends State<EditReminderScreen> {
   final _thingFocusNode = FocusNode();
   final _form = GlobalKey<FormState>();
 // start with daily only
-  var _newReminder = Reminder(
+  var _editedReminder = Reminder(
       owner_id: '',
       verb: '',
       reminder_text: '',
@@ -27,12 +27,15 @@ class _NewReminderScreenState extends State<NewReminderScreen> {
   @override
   void didChangeDependencies() {
     if (_isInit) {
-      _newReminder = Reminder(
-        owner_id: ModalRoute.of(context).settings.arguments as String,
-        verb: _newReminder.verb,
-        reminder_text: _newReminder.reminder_text,
-        regularity: _newReminder.regularity,
-        start_time: _newReminder.start_time,
+      final reminderArg = ModalRoute.of(context).settings.arguments as Reminder;
+      _editedReminder = Reminder(
+        owner_id: reminderArg.owner_id,
+        id: reminderArg.id,
+        verb: reminderArg.verb,
+        reminder_text: reminderArg.reminder_text,
+        regularity: reminderArg.regularity,
+        start_time: reminderArg.start_time,
+        next_time: reminderArg.next_time,
       );
       _isInit = false;
     }
@@ -53,8 +56,14 @@ class _NewReminderScreenState extends State<NewReminderScreen> {
     setState(() => _isLoading = true);
     _form.currentState.save();
 
-    print(_newReminder);
-    await Provider.of<Reminders>(context, listen: false).addReminder(_newReminder);
+    print(_editedReminder);
+    if(_editedReminder.id != null) {
+      await Provider.of<Reminders>(context, listen: false)
+          .updateReminder(_editedReminder);
+    } else {
+      await Provider.of<Reminders>(context, listen: false).addReminder(
+          _editedReminder);
+    }
     setState(() => _isLoading = false);
     Navigator.of(context).pop();
   }
@@ -68,7 +77,7 @@ class _NewReminderScreenState extends State<NewReminderScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('New Reminder'),
+        title: Text('Edit Reminder'),
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.save),
@@ -90,6 +99,7 @@ class _NewReminderScreenState extends State<NewReminderScreen> {
                     decoration: InputDecoration(
                       labelText: 'Verb',
                     ),
+                    initialValue: _editedReminder.verb,
                     textInputAction: TextInputAction.next,
                     textCapitalization: TextCapitalization.none,
                     onFieldSubmitted: (_) {
@@ -102,12 +112,13 @@ class _NewReminderScreenState extends State<NewReminderScreen> {
                       return null;
                     },
                     onSaved: (value) {
-                      _newReminder = Reminder(
-                        owner_id: _newReminder.owner_id,
+                      _editedReminder = Reminder(
+                        id: _editedReminder.id,
+                        owner_id: _editedReminder.owner_id,
                         verb: value.trim(),
-                        reminder_text: _newReminder.reminder_text,
-                        regularity: _newReminder.regularity,
-                        start_time: _newReminder.start_time,
+                        reminder_text: _editedReminder.reminder_text,
+                        regularity: _editedReminder.regularity,
+                        start_time: _editedReminder.start_time,
                       );
                     },
                   ),
@@ -116,6 +127,7 @@ class _NewReminderScreenState extends State<NewReminderScreen> {
                     decoration: InputDecoration(
                       labelText: 'Reminder text',
                     ),
+                    initialValue: _editedReminder.reminder_text,
                     textInputAction: TextInputAction.next,
                     textCapitalization: TextCapitalization.sentences,
                     onFieldSubmitted: (_) {
@@ -128,12 +140,13 @@ class _NewReminderScreenState extends State<NewReminderScreen> {
                       return null;
                     },
                     onSaved: (value) {
-                      _newReminder = Reminder(
-                        owner_id: _newReminder.owner_id,
-                        verb: _newReminder.verb,
+                      _editedReminder = Reminder(
+                        owner_id: _editedReminder.owner_id,
+                        id: _editedReminder.id,
+                        verb: _editedReminder.verb,
                         reminder_text: value,
-                        regularity: _newReminder.regularity,
-                        start_time: _newReminder.start_time,
+                        regularity: _editedReminder.regularity,
+                        start_time: _editedReminder.start_time,
                       );
                     },
                   ),
@@ -144,6 +157,7 @@ class _NewReminderScreenState extends State<NewReminderScreen> {
                     children: <Widget>[
                       Expanded(
                         child: DropdownButtonFormField(
+                          value: _editedReminder.start_time.hour,
                           items: hours.map(
                             (value) {
                               return DropdownMenuItem<dynamic>(
@@ -162,25 +176,27 @@ class _NewReminderScreenState extends State<NewReminderScreen> {
                             return null;
                           },
                           onChanged: (value) {
-                            _newReminder = Reminder(
-                              owner_id: _newReminder.owner_id,
-                              verb: _newReminder.verb,
-                              reminder_text: _newReminder.reminder_text,
-                              regularity: _newReminder.regularity,
+                            _editedReminder = Reminder(
+                              owner_id: _editedReminder.owner_id,
+                              id: _editedReminder.id,
+                              verb: _editedReminder.verb,
+                              reminder_text: _editedReminder.reminder_text,
+                              regularity: _editedReminder.regularity,
                               start_time: NagTimeOfDay(
                                   hour: value,
-                                  minute: _newReminder.start_time.minute),
+                                  minute: _editedReminder.start_time.minute),
                             );
                           },
                           onSaved: (value) {
-                            _newReminder = Reminder(
-                              owner_id: _newReminder.owner_id,
-                              verb: _newReminder.verb,
-                              reminder_text: _newReminder.reminder_text,
-                              regularity: _newReminder.regularity,
+                            _editedReminder = Reminder(
+                              owner_id: _editedReminder.owner_id,
+                              id: _editedReminder.id,
+                              verb: _editedReminder.verb,
+                              reminder_text: _editedReminder.reminder_text,
+                              regularity: _editedReminder.regularity,
                               start_time: NagTimeOfDay(
                                   hour: value,
-                                  minute: _newReminder.start_time.minute),
+                                  minute: _editedReminder.start_time.minute),
                             );
                           },
                         ),
@@ -188,6 +204,7 @@ class _NewReminderScreenState extends State<NewReminderScreen> {
                       Text(':'),
                       Expanded(
                         child: DropdownButtonFormField(
+                          value: _editedReminder.start_time.hour,
                           items: minutes.map(
                             (value) {
                               return DropdownMenuItem<dynamic>(
@@ -206,24 +223,26 @@ class _NewReminderScreenState extends State<NewReminderScreen> {
                             return null;
                           },
                           onChanged: (value) {
-                            _newReminder = Reminder(
-                              owner_id: _newReminder.owner_id,
-                              verb: _newReminder.verb,
-                              reminder_text: _newReminder.reminder_text,
-                              regularity: _newReminder.regularity,
+                            _editedReminder = Reminder(
+                              owner_id: _editedReminder.owner_id,
+                              id: _editedReminder.id,
+                              verb: _editedReminder.verb,
+                              reminder_text: _editedReminder.reminder_text,
+                              regularity: _editedReminder.regularity,
                               start_time: NagTimeOfDay(
-                                  hour: _newReminder.start_time.hour,
+                                  hour: _editedReminder.start_time.hour,
                                   minute: value),
                             );
                           },
                           onSaved: (value) {
-                            _newReminder = Reminder(
-                              owner_id: _newReminder.owner_id,
-                              verb: _newReminder.verb,
-                              reminder_text: _newReminder.reminder_text,
-                              regularity: _newReminder.regularity,
+                            _editedReminder = Reminder(
+                              owner_id: _editedReminder.owner_id,
+                              id: _editedReminder.id,
+                              verb: _editedReminder.verb,
+                              reminder_text: _editedReminder.reminder_text,
+                              regularity: _editedReminder.regularity,
                               start_time: NagTimeOfDay(
-                                  hour: _newReminder.start_time.hour,
+                                  hour: _editedReminder.start_time.hour,
                                   minute: value),
                             );
                           },

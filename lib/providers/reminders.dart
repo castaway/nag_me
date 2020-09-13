@@ -28,8 +28,7 @@ class Reminders with ChangeNotifier {
         .collection('users')
         .doc(this.owner_id)
         .collection('reminders')
-        .doc()
-        .set({
+        .add({
       'verb': newReminder.verb,
       'reminder_text': newReminder.reminder_text,
       'regularity': newReminder.regularity,
@@ -42,6 +41,27 @@ class Reminders with ChangeNotifier {
 
     _reminders.add(newReminder);
     notifyListeners();
+  }
+
+  Future<void> updateReminder(Reminder newReminder) async {
+    var asMap = newReminder.toMap();
+    asMap.remove('owner_id');
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(this.owner_id)
+        .collection('reminders')
+        .doc(newReminder.id)
+        .update(asMap);
+  }
+
+  Future<void> deleteReminder(Reminder toDelete) async {
+     await FirebaseFirestore.instance
+        .collection('users')
+        .doc(this.owner_id)
+        .collection('reminders')
+        .doc(toDelete.id)
+         .delete();
   }
 
   // This oughta be managed elsewhere.... but cant load mobile_service cos of config stuff
